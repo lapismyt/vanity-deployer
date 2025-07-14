@@ -1,0 +1,1 @@
+Set variables in `config.toml` and run `main.py`.
