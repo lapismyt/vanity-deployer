@@ -24,7 +24,7 @@ async def main() -> None:
     code: str = config["code"]
     data: str = config["data"]
     owner_address: str = config["owner_address"]
-    target_address: Address = config["target_address"]
+    target_address: Address = Address(config["target_address"])
     testnet: bool = config["testnet"]
 
     vanity_code: Cell = Cell.one_from_boc(vanity_code)
@@ -47,13 +47,13 @@ async def main() -> None:
 
     deploy_init_boc: str = base64.urlsafe_b64encode(
         deploy_init.serialize().to_boc(False)
-    ).decode("utf-8")
+    ).decode("utf-8").rstrip("=")
 
     deploy_body: Cell = begin_cell().store_ref(code).store_ref(data).end_cell()
 
     deploy_body_boc: str = base64.urlsafe_b64encode(deploy_body.to_boc(False)).decode(
         "utf-8"
-    )
+    ).rstrip("=")
 
     target_hash_part: bytes = target_address.hash_part
     actual_hash_part: bytes = deploy_init.serialize().hash
@@ -62,12 +62,12 @@ async def main() -> None:
     )
 
     uri_params: dict[str, str] = {
-        "amount": 1 * 1e9,
+        "amount": int(1 * 1e9),
         "bin": deploy_body_boc,
         "init": deploy_init_boc,
         "testnet": str(testnet).lower(),
     }
-    transfer_link: str = f"ton://transfer/{target_address}?{urlencode(uri_params)}"
+    transfer_link: str = f"ton://transfer/{target_address.to_str()}?{urlencode(uri_params)}"
 
     print(transfer_link)
 
